@@ -1,0 +1,1513 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  ShoppingBag, 
+  Heart, 
+  Search, 
+  MapPin, 
+  SlidersHorizontal, 
+  X, 
+  ChevronRight, 
+  Star, 
+  Gift, 
+  Phone, 
+  Sparkles, 
+  Check, 
+  User, 
+  Menu, 
+  ArrowRight,
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+  Clock
+} from 'lucide-react';
+
+// --- DATA DEFINITIONS ---
+
+const CITIES = [
+  { id: 'almaty', name: 'Алматы', flag: '🍎' },
+  { id: 'astana', name: 'Астана', flag: '🏛️' },
+  { id: 'shymkent', name: 'Шымкент', flag: '☀️' },
+  { id: 'karaganda', name: 'Караганда', flag: '🏭' },
+  { id: 'aktobe', name: 'Актобе', flag: '🌊' }
+];
+
+const STORES = [
+  {
+    cityId: 'almaty',
+    name: 'Флагманский бутик Dostyk Plaza',
+    address: 'мкр. Самал-2, д. 111, 2 этаж',
+    phone: '+7 (727) 355-01-23',
+    hours: '10:00 - 22:00',
+    whatsapp: '77011234567'
+  },
+  {
+    cityId: 'almaty',
+    name: 'Бутик Esentai Mall',
+    address: 'пр. Аль-Фараби, 77/7, 3 этаж',
+    phone: '+7 (727) 355-01-24',
+    hours: '10:00 - 22:00',
+    whatsapp: '77011234568'
+  },
+  {
+    cityId: 'astana',
+    name: 'ТРЦ Mega Silk Way',
+    address: 'пр. Кабанбай Батыра, 62, 1 этаж',
+    phone: '+7 (7172) 79-88-11',
+    hours: '10:00 - 22:00',
+    whatsapp: '77011234569'
+  },
+  {
+    cityId: 'astana',
+    name: 'ТРЦ Talan Gallery',
+    address: 'ул. Достык, 16, 2 этаж',
+    phone: '+7 (7172) 79-88-12',
+    hours: '10:00 - 22:00',
+    whatsapp: '77011234570'
+  },
+  {
+    cityId: 'shymkent',
+    name: 'ТРЦ Shymkent Plaza',
+    address: 'пл. Аль-Фараби, 3/1, 2 этаж',
+    phone: '+7 (7252) 99-55-00',
+    hours: '10:00 - 22:00',
+    whatsapp: '77011234571'
+  },
+  {
+    cityId: 'karaganda',
+    name: 'ТРЦ City Mall',
+    address: 'пр. Бухар-Жырау, 59/2, 2 этаж',
+    phone: '+7 (7212) 91-00-22',
+    hours: '10:00 - 21:00',
+    whatsapp: '77011234572'
+  },
+  {
+    cityId: 'aktobe',
+    name: 'ТРЦ KERUEN CITY',
+    address: 'ул. M. Маметовой, 4, 1 этаж',
+    phone: '+7 (7132) 90-66-11',
+    hours: '10:00 - 22:00',
+    whatsapp: '77011234573'
+  }
+];
+
+const CATEGORIES = [
+  { id: 'all', name: 'Все гиды' },
+  { id: 'suits', name: 'Костюмы и Пиджаки' },
+  { id: 'coats', name: 'Пальто и Куртки' },
+  { id: 'knitwear', name: 'Трикотаж и Свитеры' },
+  { id: 'shirts', name: 'Сорочки' },
+  { id: 'accessories', name: 'Аксессуары и Обувь' }
+];
+
+const PRICE_RANGES = [
+  { id: 'all', label: 'Любая стоимость' },
+  { id: 'under-50', label: 'До 50 000 ₸', max: 50000 },
+  { id: '50-150', label: '50 000 ₸ — 150 000 ₸', min: 50000, max: 150000 },
+  { id: '150-300', label: '150 000 ₸ — 300 000 ₸', min: 150000, max: 300000 },
+  { id: 'above-300', label: 'От 300 000 ₸', min: 300000 }
+];
+
+const GIFT_TAGS = [
+  { id: 'popular', label: '🔥 Бестселлеры' },
+  { id: 'executive', label: '💼 Деловая классика' },
+  { id: 'cashmere', label: '❄️ 100% Кашемир' },
+  { id: 'black-label', label: '👑 Black Label Collection' }
+];
+
+const PRODUCTS = [
+  {
+    id: 'fb-001',
+    name: 'Двубортное пальто Milano из итальянской шерсти',
+    category: 'coats',
+    price: 245000,
+    originalPrice: 290000,
+    tag: 'black-label',
+    rating: 4.9,
+    reviews: 28,
+    colors: [
+      { name: 'Графит', hex: '#2b2b2b' },
+      { name: 'Темно-синий', hex: '#1b263b' },
+      { name: 'Кэмел', hex: '#8c6d53' }
+    ],
+    sizes: ['48', '50', '52', '54', '56'],
+    stockCities: ['almaty', 'astana', 'shymkent'],
+    isNew: true,
+    description: 'Пальто из мягкой итальянской шерсти с добавлением кашемира. Элегантный силуэт, роговые пуговицы и подкладка из шелковистой вискозы.',
+    image: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 'fb-002',
+    name: 'Свитер из 100% монгольского кашемира',
+    category: 'knitwear',
+    price: 115000,
+    originalPrice: null,
+    tag: 'cashmere',
+    rating: 5.0,
+    reviews: 42,
+    colors: [
+      { name: 'Молочный', hex: '#e9e4d4' },
+      { name: 'Бежевый', hex: '#b5a390' },
+      { name: 'Черный', hex: '#111111' }
+    ],
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    stockCities: ['almaty', 'astana', 'shymkent', 'karaganda', 'aktobe'],
+    isNew: false,
+    description: 'Роскошный свитер плотного плетения с круглым вырезом. Идеальный подарок для холодной зимы Казахстанских мегаполисов.',
+    image: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 'fb-003',
+    name: 'Костюм-тройка Sartorial Modern Slim',
+    category: 'suits',
+    price: 320000,
+    originalPrice: 360000,
+    tag: 'executive',
+    rating: 4.8,
+    reviews: 19,
+    colors: [
+      { name: 'Глубокий синий', hex: '#0f1c3f' },
+      { name: 'Антрацит', hex: '#373a40' }
+    ],
+    sizes: ['46', '48', '50', '52', '54'],
+    stockCities: ['almaty', 'astana'],
+    isNew: true,
+    description: 'Премиальный костюм из ткани Super 150s от Loro Piana. Превосходная посадка, ручная отсрочка и непревзойденный комфорт.',
+    image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 'fb-004',
+    name: 'Шелковый галстук и нагрудный платок (Подарочный сет)',
+    category: 'accessories',
+    price: 45000,
+    originalPrice: null,
+    tag: 'popular',
+    rating: 4.9,
+    reviews: 54,
+    colors: [
+      { name: 'Изумрудный', hex: '#0f4c3a' },
+      { name: 'Бордо', hex: '#58111a' },
+      { name: 'Сапфир', hex: '#122956' }
+    ],
+    sizes: ['One Size'],
+    stockCities: ['almaty', 'astana', 'shymkent', 'karaganda', 'aktobe'],
+    isNew: false,
+    description: 'Эксклюзивный подарочный комплект из жаккардового шелка ручной работы. Упакован в фирменную матовую коробку Federico Baccio.',
+    image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 'fb-005',
+    name: 'Хлопковая сорочка Non-Iron Classic Fit',
+    category: 'shirts',
+    price: 42000,
+    originalPrice: 48000,
+    tag: 'executive',
+    rating: 4.7,
+    reviews: 31,
+    colors: [
+      { name: 'Белый', hex: '#ffffff' },
+      { name: 'Голубой', hex: '#a3c4f3' }
+    ],
+    sizes: ['39', '40', '41', '42', '43', '44'],
+    stockCities: ['almaty', 'astana', 'shymkent', 'karaganda', 'aktobe'],
+    isNew: false,
+    description: 'Сорочка из 100% египетского длинноволокнистого хлопка со специальной обработкой против мнущности. Идеальна для частых командировок.',
+    image: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 'fb-006',
+    name: 'Кожаные ремень и портмоне из телячьей кожи',
+    category: 'accessories',
+    price: 68000,
+    originalPrice: null,
+    tag: 'popular',
+    rating: 5.0,
+    reviews: 38,
+    colors: [
+      { name: 'Черный', hex: '#000000' },
+      { name: 'Коньячный', hex: '#63300f' }
+    ],
+    sizes: ['95 cm', '105 cm', '115 cm'],
+    stockCities: ['almaty', 'astana', 'shymkent'],
+    isNew: true,
+    description: 'Набор из гладкой телячьей кожи итальянской выделки. Металлическая фурнитура с матовым сатинированием.',
+    image: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 'fb-007',
+    name: 'Куртка-бомбер из замши с меховым воротником',
+    category: 'coats',
+    price: 285000,
+    originalPrice: 330000,
+    tag: 'black-label',
+    rating: 4.9,
+    reviews: 14,
+    colors: [
+      { name: 'Шоколад', hex: '#3d2314' },
+      { name: 'Хаки', hex: '#2b331f' }
+    ],
+    sizes: ['48', '50', '52', '54'],
+    stockCities: ['almaty', 'astana'],
+    isNew: true,
+    description: 'Роскошный замшевый бомбер с отстегивающимся воротником из натуральной овчины. Подкладка утеплена легким тинсулейтом.',
+    image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 'fb-008',
+    name: 'Шарф из шерсти альпаки и кашемира',
+    category: 'accessories',
+    price: 38000,
+    originalPrice: null,
+    tag: 'cashmere',
+    rating: 4.8,
+    reviews: 67,
+    colors: [
+      { name: 'Песочный', hex: '#c5a059' },
+      { name: 'Серый меланж', hex: '#888888' },
+      { name: 'Темно-синий', hex: '#162238' }
+    ],
+    sizes: ['One Size'],
+    stockCities: ['almaty', 'astana', 'shymkent', 'karaganda', 'aktobe'],
+    isNew: false,
+    description: 'Невероятно мягкий и теплый шарф с бахромой. Деликатный логотип Federico Baccio, вышитый шелковой нитью.',
+    image: 'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?auto=format&fit=crop&q=80&w=800'
+  }
+];
+
+const GIFT_SETS = [
+  {
+    id: 'set-1',
+    title: 'Набор «The Gentleman»',
+    price: 195000,
+    oldPrice: 228000,
+    items: ['Кашемировый свитер', 'Шелковый шарф', 'Кожаный ремень'],
+    badge: 'Скидка 15%',
+    img: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 'set-2',
+    title: 'Набор «CEO Executive»',
+    price: 390000,
+    oldPrice: 450000,
+    items: ['Костюм Sartorial Super 150s', 'Сорочка Non-Iron', 'Шелковый галстук'],
+    badge: 'VIP Набор',
+    img: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 'set-3',
+    title: 'Набор «Winter Warmth»',
+    price: 140000,
+    oldPrice: 165000,
+    items: ['Шарф из альпаки', 'Кожаные перчатки на меху', 'Шапка из кашемира'],
+    badge: 'Хит сезона',
+    img: 'https://images.unsplash.com/photo-1516826957135-700dedea698c?auto=format&fit=crop&q=80&w=600'
+  }
+];
+
+export default function App() {
+  // --- STATES ---
+  const [currentCity, setCurrentCity] = useState('almaty');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
+  const [selectedTag, setSelectedTag] = useState('all');
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isCityModalOpen, setIsCityModalOpen] = useState(false);
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  
+  // Custom Gift Certificate state
+  const [certAmount, setCertAmount] = useState(50000);
+  const [certRecipient, setCertRecipient] = useState('');
+  const [certSender, setCertSender] = useState('');
+  const [certMessage, setCertMessage] = useState('');
+
+  // Checkout modal
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+
+  // Active City details
+  const activeCityObj = useMemo(() => {
+    return CITIES.find(c => c.id === currentCity) || CITIES[0];
+  }, [currentCity]);
+
+  // Filtered Products
+  const filteredProducts = useMemo(() => {
+    return PRODUCTS.filter(prod => {
+      // Category Filter
+      if (selectedCategory !== 'all' && prod.category !== selectedCategory) return false;
+      
+      // Tag Filter
+      if (selectedTag !== 'all' && prod.tag !== selectedTag) return false;
+
+      // Price Filter
+      if (selectedPriceRange !== 'all') {
+        const range = PRICE_RANGES.find(r => r.id === selectedPriceRange);
+        if (range) {
+          if (range.min && prod.price < range.min) return false;
+          if (range.max && prod.price > range.max) return false;
+        }
+      }
+
+      // Search Query
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        const matchName = prod.name.toLowerCase().includes(q);
+        const matchDesc = prod.description.toLowerCase().includes(q);
+        if (!matchName && !matchDesc) return false;
+      }
+
+      return true;
+    });
+  }, [selectedCategory, selectedPriceRange, selectedTag, searchQuery]);
+
+  // Cart operations
+  const addToCart = (product, size, color) => {
+    const cartItemId = `${product.id}-${size || 'default'}-${color?.name || 'default'}`;
+    setCart(prev => {
+      const existing = prev.find(item => item.cartItemId === cartItemId);
+      if (existing) {
+        return prev.map(item => 
+          item.cartItemId === cartItemId 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, {
+        cartItemId,
+        product,
+        selectedSize: size || product.sizes[0],
+        selectedColor: color || product.colors[0],
+        quantity: 1
+      }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const updateCartQty = (cartItemId, delta) => {
+    setCart(prev => prev.map(item => {
+      if (item.cartItemId === cartItemId) {
+        const newQty = item.quantity + delta;
+        return newQty > 0 ? { ...item, quantity: newQty } : null;
+      }
+      return item;
+    }).filter(Boolean));
+  };
+
+  const removeFromCart = (cartItemId) => {
+    setCart(prev => prev.filter(item => item.cartItemId !== cartItemId));
+  };
+
+  const cartTotal = useMemo(() => {
+    return cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  }, [cart]);
+
+  // Wishlist operation
+  const toggleWishlist = (product) => {
+    setWishlist(prev => {
+      const exists = prev.some(p => p.id === product.id);
+      if (exists) {
+        return prev.filter(p => p.id !== product.id);
+      } else {
+        return [...prev, product];
+      }
+    });
+  };
+
+  const formattedPrice = (price) => {
+    return price.toLocaleString('ru-RU') + ' ₸';
+  };
+
+  return (
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-neutral-800 selection:text-white">
+      
+      {/* 1. TOP ANNOUNCEMENT BAR */}
+      <div className="bg-neutral-900 border-b border-neutral-800 text-xs py-2 px-4 text-center tracking-widest uppercase text-neutral-400 flex items-center justify-between">
+        <div className="hidden md:flex items-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span>Праздничный гид по подаркам 2026</span>
+        </div>
+        
+        <div className="mx-auto md:mx-0 flex items-center gap-2">
+          <span>Бесплатная экспресс-доставка по всему Казахстану при заказе от 100 000 ₸</span>
+        </div>
+
+        {/* City Switcher Trigger */}
+        <button 
+          onClick={() => setIsCityModalOpen(true)}
+          className="flex items-center gap-1 text-neutral-200 hover:text-white transition-colors cursor-pointer"
+        >
+          <MapPin className="w-3.5 h-3.5 text-amber-500" />
+          <span className="font-semibold underline decoration-neutral-600 underline-offset-4">
+            {activeCityObj.flag} {activeCityObj.name}
+          </span>
+        </button>
+      </div>
+
+      {/* 2. NAVIGATION HEADER */}
+      <header className="sticky top-0 z-40 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          {/* Mobile Menu Icon */}
+          <div className="flex items-center gap-4 lg:hidden">
+            <button className="text-neutral-300 hover:text-white">
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* BRAND LOGO */}
+          <div className="flex flex-col items-center lg:items-start cursor-pointer">
+            <span className="text-2xl font-serif tracking-[0.25em] font-light text-white uppercase">
+              Federico Baccio
+            </span>
+            <span className="text-[9px] tracking-[0.4em] uppercase text-neutral-400 font-sans">
+              Казахстан • Milano
+            </span>
+          </div>
+
+          {/* DESKTOP NAV LINKS */}
+          <nav className="hidden lg:flex items-center gap-8 text-xs uppercase tracking-widest text-neutral-300 font-medium">
+            <a href="#gift-guide" className="hover:text-amber-400 transition-colors">Гид по подаркам</a>
+            <a href="#new-collection" className="hover:text-amber-400 transition-colors">Новая Коллекция</a>
+            <a href="#gift-sets" className="hover:text-amber-400 transition-colors">Готовые Сеты</a>
+            <a href="#gift-card" className="hover:text-amber-400 transition-colors">Подарочные карты</a>
+            <a href="#boutiques" className="hover:text-amber-400 transition-colors">Бутики ({CITIES.length})</a>
+          </nav>
+
+          {/* ACTION ICONS */}
+          <div className="flex items-center gap-5">
+            {/* Search Input Desktop */}
+            <div className="hidden sm:flex items-center relative">
+              <input 
+                type="text" 
+                placeholder="Поиск подарков..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-neutral-900 text-xs text-white pl-9 pr-4 py-2 border border-neutral-800 rounded-full focus:outline-none focus:border-neutral-500 w-40 focus:w-60 transition-all placeholder-neutral-500"
+              />
+              <Search className="w-4 h-4 text-neutral-400 absolute left-3 pointer-events-none" />
+            </div>
+
+            {/* Wishlist Icon */}
+            <button 
+              onClick={() => setIsWishlistOpen(true)}
+              className="relative text-neutral-300 hover:text-white transition-colors"
+              title="Избранное"
+            >
+              <Heart className="w-5 h-5" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1.5 -right-2 bg-amber-500 text-neutral-950 font-bold rounded-full w-4 h-4 text-[10px] flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </button>
+
+            {/* Cart Icon */}
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative text-neutral-300 hover:text-white transition-colors flex items-center gap-2"
+              title="Корзина"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {cart.length > 0 && (
+                <span className="bg-white text-neutral-950 font-bold rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                  {cart.reduce((a, b) => a + b.quantity, 0)}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* 3. HERO SECTION (Calvin Klein style minimal & high-fashion) */}
+      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-neutral-900 border-b border-neutral-800">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&q=80&w=1920" 
+            alt="Federico Baccio Holiday" 
+            className="w-full h-full object-cover object-center opacity-40 mix-blend-luminosity scale-105 transform hover:scale-100 transition-transform duration-1000"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent" />
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-neutral-700 bg-neutral-900/80 text-amber-400 text-xs uppercase tracking-widest backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Holiday Gift Guide 2026 • {activeCityObj.name}</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif tracking-tight font-extralight text-white leading-tight">
+            Искусство дарить <br />
+            <span className="font-normal italic">безупречный стиль</span>
+          </h1>
+
+          <p className="text-neutral-300 text-sm sm:text-base max-w-2xl mx-auto font-light leading-relaxed">
+            Откройте эксклюзивную подборку мужской одежды и аксессуаров Federico Baccio. Итальянское мастерство, кашемир премиум-класса и индивидуальный пошив в главных бутиках Казахстана.
+          </p>
+
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a 
+              href="#gift-guide"
+              className="w-full sm:w-auto px-8 py-4 bg-white text-neutral-950 font-medium text-xs uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-lg"
+            >
+              Смотреть Гид по Подаркам
+            </a>
+            <a 
+              href="#gift-card"
+              className="w-full sm:w-auto px-8 py-4 bg-transparent border border-neutral-600 text-white font-medium text-xs uppercase tracking-[0.2em] hover:border-white transition-all backdrop-blur-sm"
+            >
+              Подарочные карты
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. VALUE PROPOSITIONS BAR */}
+      <section className="bg-neutral-900/50 border-b border-neutral-800 py-6">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="flex flex-col items-center gap-2">
+            <Truck className="w-5 h-5 text-amber-400" />
+            <span className="text-xs uppercase tracking-wider font-medium text-neutral-200">Доставка день-в-день</span>
+            <span className="text-[11px] text-neutral-400">в {activeCityObj.name} и по всему РК</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <Gift className="w-5 h-5 text-amber-400" />
+            <span className="text-xs uppercase tracking-wider font-medium text-neutral-200">Фирменная упаковка</span>
+            <span className="text-[11px] text-neutral-400">Бесплатно к каждому подарку</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-amber-400" />
+            <span className="text-xs uppercase tracking-wider font-medium text-neutral-200">100% Гарантия качества</span>
+            <span className="text-[11px] text-neutral-400">Итальянские ткани и фурнитура</span>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <RotateCcw className="w-5 h-5 text-amber-400" />
+            <span className="text-xs uppercase tracking-wider font-medium text-neutral-200">Легкий обмен и возврат</span>
+            <span className="text-[11px] text-neutral-400">14 дней в любом бутике</span>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. GIFT GUIDE & CATALOG SECTION */}
+      <section id="gift-guide" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        
+        {/* SECTION TITLE */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b border-neutral-800">
+          <div>
+            <h2 className="text-2xl sm:text-4xl font-serif tracking-wide font-light text-white">
+              Праздничная Коллекция
+            </h2>
+            <p className="text-neutral-400 text-xs sm:text-sm mt-1">
+              Наличие обновлено для бутиков в г. <span className="text-white font-medium">{activeCityObj.name}</span>
+            </p>
+          </div>
+          <div className="mt-4 md:mt-0 text-xs text-neutral-400">
+            Найдено позиций: <span className="text-white font-semibold">{filteredProducts.length}</span>
+          </div>
+        </div>
+
+        {/* INTERACTIVE FILTERS */}
+        <div className="space-y-6 mb-12">
+          
+          {/* Categories Tab Bar */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-5 py-2.5 rounded-full text-xs uppercase tracking-wider whitespace-nowrap transition-all ${
+                  selectedCategory === cat.id
+                    ? 'bg-white text-neutral-950 font-semibold shadow-md'
+                    : 'bg-neutral-900 text-neutral-400 hover:text-white hover:bg-neutral-800 border border-neutral-800'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Sub-Filters (Price & Tags) */}
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-neutral-800/60">
+            
+            {/* Tags Pills */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-neutral-400 uppercase tracking-wider mr-2">Теги:</span>
+              <button
+                onClick={() => setSelectedTag('all')}
+                className={`px-3 py-1 rounded text-xs transition-colors ${
+                  selectedTag === 'all' ? 'text-amber-400 underline font-medium' : 'text-neutral-400 hover:text-neutral-200'
+                }`}
+              >
+                Все
+              </button>
+              {GIFT_TAGS.map(tag => (
+                <button
+                  key={tag.id}
+                  onClick={() => setSelectedTag(tag.id)}
+                  className={`px-3 py-1 rounded text-xs transition-colors ${
+                    selectedTag === tag.id ? 'bg-amber-400/10 text-amber-400 border border-amber-400/30' : 'bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-700'
+                  }`}
+                >
+                  {tag.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Price Selector */}
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-neutral-400" />
+              <select
+                value={selectedPriceRange}
+                onChange={(e) => setSelectedPriceRange(e.target.value)}
+                className="bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 rounded px-3 py-1.5 focus:outline-none focus:border-neutral-600"
+              >
+                {PRICE_RANGES.map(range => (
+                  <option key={range.id} value={range.id}>
+                    {range.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        {/* PRODUCT GRID */}
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-20 bg-neutral-900/30 border border-neutral-800 rounded-lg">
+            <Gift className="w-12 h-12 text-neutral-600 mx-auto mb-3" />
+            <p className="text-neutral-300 text-lg font-serif">Ничего не найдено</p>
+            <p className="text-neutral-500 text-xs mt-1">Попробуйте изменить параметры фильтров или поисковый запрос.</p>
+            <button
+              onClick={() => {
+                setSelectedCategory('all');
+                setSelectedPriceRange('all');
+                setSelectedTag('all');
+                setSearchQuery('');
+              }}
+              className="mt-4 px-4 py-2 bg-neutral-800 text-xs text-white uppercase tracking-wider rounded hover:bg-neutral-700"
+            >
+              Сбросить все фильтры
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+            {filteredProducts.map(product => {
+              const inStockInCurrentCity = product.stockCities.includes(currentCity);
+              const isWishlisted = wishlist.some(p => p.id === product.id);
+
+              return (
+                <div key={product.id} className="group flex flex-col justify-between relative">
+                  
+                  {/* IMAGE & BADGES */}
+                  <div className="relative aspect-[3/4] bg-neutral-900 overflow-hidden mb-4 border border-neutral-800">
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
+                    />
+
+                    {/* Stock Indicator Badge */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-1">
+                      {product.isNew && (
+                        <span className="bg-white text-neutral-950 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5">
+                          NEW
+                        </span>
+                      )}
+                      {inStockInCurrentCity ? (
+                        <span className="bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-[9px] px-2 py-0.5 rounded backdrop-blur-md">
+                          В наличии ({activeCityObj.name})
+                        </span>
+                      ) : (
+                        <span className="bg-neutral-900/90 border border-neutral-700 text-neutral-400 text-[9px] px-2 py-0.5 rounded backdrop-blur-md">
+                          Под заказ (2-3 дня)
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Wishlist Button */}
+                    <button
+                      onClick={() => toggleWishlist(product)}
+                      className="absolute top-3 right-3 p-2 rounded-full bg-neutral-950/60 text-white hover:bg-neutral-950 transition-colors"
+                      title="В избранное"
+                    >
+                      <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-neutral-300'}`} />
+                    </button>
+
+                    {/* Quick View Button on Hover */}
+                    <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-neutral-950/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                      <button
+                        onClick={() => setQuickViewProduct(product)}
+                        className="w-full py-2 bg-neutral-900/90 border border-neutral-700 text-white text-xs uppercase tracking-wider hover:bg-white hover:text-neutral-950 transition-colors"
+                      >
+                        Быстрый просмотр
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* DETAILS */}
+                  <div className="space-y-2 flex-grow flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
+                        <span className="capitalize">{product.category}</span>
+                        <div className="flex items-center gap-1 text-amber-400">
+                          <Star className="w-3 h-3 fill-amber-400" />
+                          <span>{product.rating} ({product.reviews})</span>
+                        </div>
+                      </div>
+
+                      <h3 
+                        onClick={() => setQuickViewProduct(product)}
+                        className="text-sm font-medium text-neutral-200 hover:text-amber-400 cursor-pointer line-clamp-2 transition-colors"
+                      >
+                        {product.name}
+                      </h3>
+                    </div>
+
+                    {/* Color swatches preview */}
+                    <div className="flex items-center gap-1.5 py-1">
+                      {product.colors.map((col, idx) => (
+                        <span 
+                          key={idx}
+                          className="w-3 h-3 rounded-full border border-neutral-700" 
+                          style={{ backgroundColor: col.hex }}
+                          title={col.name}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Price & Add to Cart */}
+                    <div className="pt-2 border-t border-neutral-900 flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-semibold text-white">
+                          {formattedPrice(product.price)}
+                        </div>
+                        {product.originalPrice && (
+                          <div className="text-xs text-neutral-500 line-through">
+                            {formattedPrice(product.originalPrice)}
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => addToCart(product, product.sizes[0], product.colors[0])}
+                        className="p-2.5 bg-neutral-900 border border-neutral-800 hover:border-white hover:bg-white hover:text-neutral-950 text-neutral-200 transition-all rounded-none"
+                        title="Добавить в корзину"
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+      </section>
+
+      {/* 6. CURATED GIFT SETS SECTION */}
+      <section id="gift-sets" className="bg-neutral-900 py-16 border-y border-neutral-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+            <span className="text-amber-400 text-xs uppercase tracking-[0.2em]">Готовые решения</span>
+            <h2 className="text-3xl sm:text-4xl font-serif text-white font-light">
+              Праздничные Подарочные Сеты
+            </h2>
+            <p className="text-neutral-400 text-xs sm:text-sm">
+              Коллекции гармонично подобранных аксессуаров и одежды в фирменных подарочных кейсах Federico Baccio.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {GIFT_SETS.map(set => (
+              <div key={set.id} className="bg-neutral-950 border border-neutral-800 overflow-hidden group flex flex-col justify-between">
+                <div>
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img 
+                      src={set.img} 
+                      alt={set.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <span className="absolute top-4 left-4 bg-amber-500 text-neutral-950 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1">
+                      {set.badge}
+                    </span>
+                  </div>
+
+                  <div className="p-6 space-y-4">
+                    <h3 className="text-xl font-serif text-white">{set.title}</h3>
+                    
+                    <ul className="space-y-2">
+                      {set.items.map((item, i) => (
+                        <li key={i} className="text-xs text-neutral-400 flex items-center gap-2">
+                          <Check className="w-3.5 h-3.5 text-amber-400" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="p-6 pt-0 border-t border-neutral-900 flex items-center justify-between mt-4">
+                  <div>
+                    <span className="text-xs text-neutral-500 line-through block">{formattedPrice(set.oldPrice)}</span>
+                    <span className="text-lg font-semibold text-white">{formattedPrice(set.price)}</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      alert(`Набор "${set.title}" добавлен в заказ. Менеджер свяжется с вами для уточнения размеров.`);
+                    }}
+                    className="px-4 py-2.5 bg-neutral-900 border border-neutral-700 text-xs uppercase tracking-wider text-white hover:bg-white hover:text-neutral-950 transition-colors"
+                  >
+                    Заказать сет
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* 7. DIGITAL & PHYSICAL GIFT CARDS */}
+      <section id="gift-card" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          
+          {/* LIVE PREVIEW OF GIFT CARD */}
+          <div className="relative p-8 rounded-2xl bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 border border-amber-500/30 shadow-2xl overflow-hidden aspect-[1.58/1] flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-xs tracking-[0.3em] uppercase text-amber-400 block font-semibold">Federico Baccio</span>
+                <span className="text-[10px] tracking-widest text-neutral-400 uppercase">Gift Certificate • Kazakhstan</span>
+              </div>
+              <Sparkles className="w-6 h-6 text-amber-400" />
+            </div>
+
+            <div className="my-6 space-y-2">
+              <div className="text-3xl sm:text-5xl font-serif text-white tracking-wider">
+                {formattedPrice(certAmount)}
+              </div>
+              {certRecipient && (
+                <p className="text-xs text-neutral-300">Для: <span className="font-semibold text-white">{certRecipient}</span></p>
+              )}
+              {certMessage && (
+                <p className="text-[11px] text-neutral-400 italic line-clamp-2">"{certMessage}"</p>
+              )}
+            </div>
+
+            <div className="flex justify-between items-end text-[10px] text-neutral-500 uppercase tracking-widest border-t border-neutral-800/80 pt-4">
+              <span>Действителен во всех бутиках РК</span>
+              <span>От: {certSender || 'Ваш отправитель'}</span>
+            </div>
+          </div>
+
+          {/* GIFT CARD FORM */}
+          <div className="space-y-6">
+            <div>
+              <span className="text-amber-400 text-xs uppercase tracking-[0.2em]">Идеальный выбор</span>
+              <h2 className="text-3xl font-serif text-white font-light mt-1">
+                Подарочный Сертификат Federico Baccio
+              </h2>
+              <p className="text-neutral-400 text-xs sm:text-sm mt-2">
+                Не уверены в размере или предпочтениях? Подарите свободу выбора истинного итальянского стиля. Доставляется в фирменном конверте с сургучной печатью или мгновенно на Email.
+              </p>
+            </div>
+
+            {/* Amount selector */}
+            <div className="space-y-2">
+              <label className="text-xs text-neutral-300 uppercase tracking-wider block">Номинал сертификата:</label>
+              <div className="grid grid-cols-4 gap-2">
+                {[50000, 100000, 200000, 500000].map(amt => (
+                  <button
+                    key={amt}
+                    onClick={() => setCertAmount(amt)}
+                    className={`py-2 text-xs font-semibold rounded border transition-all ${
+                      certAmount === amt 
+                        ? 'bg-amber-400 text-neutral-950 border-amber-400' 
+                        : 'bg-neutral-900 text-neutral-300 border-neutral-800 hover:border-neutral-600'
+                    }`}
+                  >
+                    {amt / 1000}k ₸
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Recipient details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[11px] text-neutral-400 uppercase tracking-wider block mb-1">Имя получателя</label>
+                <input 
+                  type="text"
+                  placeholder="Аскар Нурланов"
+                  value={certRecipient}
+                  onChange={(e) => setCertRecipient(e.target.value)}
+                  className="w-full bg-neutral-900 border border-neutral-800 text-xs text-white p-3 rounded focus:outline-none focus:border-amber-400"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-neutral-400 uppercase tracking-wider block mb-1">Ваше имя</label>
+                <input 
+                  type="text"
+                  placeholder="Арман"
+                  value={certSender}
+                  onChange={(e) => setCertSender(e.target.value)}
+                  className="w-full bg-neutral-900 border border-neutral-800 text-xs text-white p-3 rounded focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] text-neutral-400 uppercase tracking-wider block mb-1">Праздничное пожелание</label>
+              <textarea
+                rows={2}
+                placeholder="С Новым Годом! Желаю новых вершин и безупречного стиля..."
+                value={certMessage}
+                onChange={(e) => setCertMessage(e.target.value)}
+                className="w-full bg-neutral-900 border border-neutral-800 text-xs text-white p-3 rounded focus:outline-none focus:border-amber-400"
+              />
+            </div>
+
+            <button 
+              onClick={() => alert(`Подарочный сертификат на ${formattedPrice(certAmount)} добавлен в корзину!`)}
+              className="w-full py-4 bg-white text-neutral-950 font-semibold text-xs uppercase tracking-[0.2em] hover:bg-amber-400 transition-colors"
+            >
+              Оформить сертификат
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 8. BOUTIQUES LOCATOR (KAZAKHSTAN CITIES) */}
+      <section id="boutiques" className="bg-neutral-900 border-t border-neutral-800 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b border-neutral-800">
+            <div>
+              <span className="text-amber-400 text-xs uppercase tracking-[0.2em]">Примерка и Консультации</span>
+              <h2 className="text-3xl font-serif text-white font-light mt-1">
+                Бутики Federico Baccio в Казахстане
+              </h2>
+            </div>
+            <p className="text-xs text-neutral-400 mt-2 md:mt-0">
+              Посетите наши салоны для индивидуальной подгонки и персонального стилиста
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {STORES.map((store, i) => {
+              const storeCity = CITIES.find(c => c.id === store.cityId);
+              const isCurrentCityStore = store.cityId === currentCity;
+
+              return (
+                <div 
+                  key={i} 
+                  className={`p-6 bg-neutral-950 border transition-all ${
+                    isCurrentCityStore ? 'border-amber-500/50 shadow-lg' : 'border-neutral-800 hover:border-neutral-700'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-xs uppercase tracking-widest text-amber-400 font-semibold flex items-center gap-1">
+                      <span>{storeCity?.flag}</span>
+                      <span>{storeCity?.name}</span>
+                    </span>
+                    {isCurrentCityStore && (
+                      <span className="text-[9px] bg-amber-400/10 text-amber-400 px-2 py-0.5 rounded uppercase font-bold">
+                        Ваш город
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-base font-medium text-white mb-2">{store.name}</h3>
+                  <p className="text-xs text-neutral-400 mb-4 flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
+                    <span>{store.address}</span>
+                  </p>
+
+                  <div className="space-y-2 text-xs text-neutral-400 pt-3 border-t border-neutral-900">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-neutral-500" />
+                      <span>{store.hours}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-neutral-500" />
+                      <span>{store.phone}</span>
+                    </div>
+                  </div>
+
+                  <a 
+                    href={`https://wa.me/${store.whatsapp}?text=Здравствуйте,%20хочу%20уточнить%20наличие%20подарков%20в%20бутике%20${encodeURIComponent(store.name)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-5 w-full py-2.5 bg-neutral-900 border border-neutral-800 hover:bg-emerald-950 hover:border-emerald-700 hover:text-emerald-300 text-neutral-300 text-xs flex items-center justify-center gap-2 transition-all rounded"
+                  >
+                    <span>Связаться со стилистом WhatsApp</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* 9. FOOTER */}
+      <footer className="bg-neutral-950 border-t border-neutral-800 text-neutral-400 text-xs py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          
+          <div className="space-y-4">
+            <span className="text-lg font-serif tracking-[0.2em] text-white uppercase block">
+              Federico Baccio
+            </span>
+            <p className="text-neutral-500 text-[11px] leading-relaxed">
+              Премиальная мужская одежда, костюмы и аксессуары итальянского качества. Флагманские бутики в Алматы, Астане, Шымкенте, Караганде и Актобе.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="text-white uppercase tracking-wider font-semibold mb-3 text-[11px]">Клиентская служба</h4>
+            <ul className="space-y-2 text-neutral-400">
+              <li><a href="#" className="hover:text-white">Доставка и оплата в РК</a></li>
+              <li><a href="#" className="hover:text-white">Возврат и обмен</a></li>
+              <li><a href="#" className="hover:text-white">Таблица размеров</a></li>
+              <li><a href="#" className="hover:text-white">Индивидуальный пошив (Made-to-Measure)</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white uppercase tracking-wider font-semibold mb-3 text-[11px]">Бутики в Казахстане</h4>
+            <ul className="space-y-2 text-neutral-400">
+              <li><a href="#" className="hover:text-white">Dostyk Plaza & Esentai Mall (Алматы)</a></li>
+              <li><a href="#" className="hover:text-white">Mega Silk Way & Talan (Астана)</a></li>
+              <li><a href="#" className="hover:text-white">Shymkent Plaza (Шымкент)</a></li>
+              <li><a href="#" className="hover:text-white">City Mall (Караганда)</a></li>
+              <li><a href="#" className="hover:text-white">Keruen City (Актобе)</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white uppercase tracking-wider font-semibold mb-3 text-[11px]">Подписка на VIP-предложения</h4>
+            <p className="text-neutral-500 text-[11px] mb-3">Получайте закрытые приглашения на предзаказ новых коллекций.</p>
+            <div className="flex">
+              <input 
+                type="email" 
+                placeholder="Ваш Email" 
+                className="bg-neutral-900 border border-neutral-800 px-3 py-2 text-white w-full text-xs focus:outline-none focus:border-neutral-600"
+              />
+              <button className="bg-white text-neutral-950 px-4 font-bold uppercase text-[10px] hover:bg-amber-400">
+                OK
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-neutral-900 pt-6 flex flex-col sm:flex-row items-center justify-between text-neutral-600 text-[11px]">
+          <span>© 2026 Federico Baccio Kazakhstan. Все права защищены.</span>
+          <div className="flex gap-4 mt-2 sm:mt-0">
+            <a href="#" className="hover:text-neutral-400">Конфиденциальность</a>
+            <a href="#" className="hover:text-neutral-400">Условия использования</a>
+          </div>
+        </div>
+      </footer>
+
+      {/* --- MODALS & DRAWERS --- */}
+
+      {/* A. CITY SELECTOR MODAL */}
+      {isCityModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-neutral-900 border border-neutral-800 w-full max-w-md rounded-lg p-6 space-y-6">
+            <div className="flex justify-between items-center border-b border-neutral-800 pb-4">
+              <h3 className="text-lg font-serif text-white flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-amber-400" />
+                <span>Выберите ваш город</span>
+              </h3>
+              <button onClick={() => setIsCityModalOpen(false)} className="text-neutral-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-neutral-400">
+              Это позволит отобразить актуальное наличие товаров в бутиках и точные сроки курьерской доставки.
+            </p>
+
+            <div className="space-y-2">
+              {CITIES.map(city => (
+                <button
+                  key={city.id}
+                  onClick={() => {
+                    setCurrentCity(city.id);
+                    setIsCityModalOpen(false);
+                  }}
+                  className={`w-full p-3 rounded text-left flex items-center justify-between text-sm transition-all ${
+                    currentCity === city.id 
+                      ? 'bg-amber-400/10 border border-amber-400/40 text-amber-400 font-medium' 
+                      : 'bg-neutral-950 border border-neutral-800 text-neutral-300 hover:bg-neutral-800'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="text-lg">{city.flag}</span>
+                    <span>г. {city.name}</span>
+                  </span>
+                  {currentCity === city.id && <Check className="w-4 h-4" />}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setIsCityModalOpen(false)}
+              className="w-full py-2.5 bg-neutral-800 text-xs text-neutral-300 uppercase tracking-wider rounded hover:bg-neutral-700"
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* B. QUICK VIEW PRODUCT MODAL */}
+      {quickViewProduct && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-neutral-900 border border-neutral-800 w-full max-w-3xl rounded-lg overflow-hidden relative grid grid-cols-1 md:grid-cols-2">
+            
+            <button 
+              onClick={() => setQuickViewProduct(null)}
+              className="absolute top-3 right-3 z-10 p-2 bg-neutral-950/70 text-white rounded-full hover:bg-neutral-950"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Product Image */}
+            <div className="aspect-[3/4] bg-neutral-950 relative">
+              <img 
+                src={quickViewProduct.image} 
+                alt={quickViewProduct.name} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Product Details & Actions */}
+            <div className="p-6 flex flex-col justify-between space-y-4">
+              <div>
+                <span className="text-xs text-amber-400 uppercase tracking-widest block font-medium">
+                  {quickViewProduct.category}
+                </span>
+                <h3 className="text-xl font-serif text-white mt-1">{quickViewProduct.name}</h3>
+                
+                <div className="text-xl font-bold text-white mt-3">
+                  {formattedPrice(quickViewProduct.price)}
+                  {quickViewProduct.originalPrice && (
+                    <span className="text-xs text-neutral-500 line-through font-normal ml-2">
+                      {formattedPrice(quickViewProduct.originalPrice)}
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-xs text-neutral-400 mt-3 leading-relaxed">
+                  {quickViewProduct.description}
+                </p>
+
+                {/* Available colors */}
+                <div className="mt-4 space-y-1.5">
+                  <span className="text-xs text-neutral-400 block">Цвет:</span>
+                  <div className="flex gap-2">
+                    {quickViewProduct.colors.map((c, i) => (
+                      <span key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-950 border border-neutral-800 text-xs rounded text-neutral-300">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.hex }} />
+                        <span>{c.name}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sizes */}
+                <div className="mt-4 space-y-1.5">
+                  <span className="text-xs text-neutral-400 block">Выберите размер (EU):</span>
+                  <div className="flex flex-wrap gap-2">
+                    {quickViewProduct.sizes.map((sz, idx) => (
+                      <button 
+                        key={idx}
+                        className="px-3 py-1.5 bg-neutral-950 border border-neutral-700 hover:border-amber-400 text-xs text-white rounded font-medium"
+                      >
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Availability in City */}
+                <div className="mt-4 p-3 bg-neutral-950 border border-neutral-800 rounded text-xs text-neutral-300 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-amber-400" />
+                  <span>Доступно в бутиках: <strong className="text-white">{activeCityObj.name}</strong></span>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-neutral-800 flex gap-3">
+                <button
+                  onClick={() => {
+                    addToCart(quickViewProduct, quickViewProduct.sizes[0], quickViewProduct.colors[0]);
+                    setQuickViewProduct(null);
+                  }}
+                  className="flex-1 py-3 bg-white text-neutral-950 font-semibold text-xs uppercase tracking-wider hover:bg-amber-400 transition-colors flex items-center justify-center gap-2"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>В корзину</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* C. SHOPPING CART DRAWER */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsCartOpen(false)} />
+          
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-neutral-950 border-l border-neutral-800 text-neutral-100 p-6 flex flex-col justify-between shadow-2xl">
+              
+              {/* Header */}
+              <div>
+                <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBag className="w-5 h-5 text-amber-400" />
+                    <h2 className="text-lg font-serif text-white">Ваша корзина ({cart.reduce((a,b)=>a+b.quantity,0)})</h2>
+                  </div>
+                  <button onClick={() => setIsCartOpen(false)} className="text-neutral-400 hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Items List */}
+                {cart.length === 0 ? (
+                  <div className="text-center py-16 space-y-3">
+                    <ShoppingBag className="w-12 h-12 text-neutral-700 mx-auto" />
+                    <p className="text-neutral-400 text-sm">Ваша корзина пуста</p>
+                    <button 
+                      onClick={() => setIsCartOpen(false)}
+                      className="px-4 py-2 bg-neutral-900 border border-neutral-700 text-xs text-white rounded hover:bg-neutral-800"
+                    >
+                      Перейти к покупкам
+                    </button>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-neutral-800 max-h-[60vh] overflow-y-auto my-4 pr-1">
+                    {cart.map(item => (
+                      <div key={item.cartItemId} className="py-4 flex gap-4">
+                        <img 
+                          src={item.product.image} 
+                          alt={item.product.name} 
+                          className="w-16 h-20 object-cover bg-neutral-900 rounded"
+                        />
+                        <div className="flex-1 space-y-1">
+                          <h4 className="text-xs font-medium text-white line-clamp-1">{item.product.name}</h4>
+                          <div className="text-[11px] text-neutral-400 flex gap-2">
+                            <span>Размер: {item.selectedSize}</span>
+                            <span>•</span>
+                            <span>{item.selectedColor.name}</span>
+                          </div>
+                          <div className="text-xs font-semibold text-white pt-1">
+                            {formattedPrice(item.product.price)}
+                          </div>
+
+                          {/* Quantity control */}
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center border border-neutral-800 rounded bg-neutral-900">
+                              <button 
+                                onClick={() => updateCartQty(item.cartItemId, -1)}
+                                className="px-2 py-0.5 text-neutral-400 hover:text-white"
+                              >
+                                -
+                              </button>
+                              <span className="px-2 text-xs font-semibold">{item.quantity}</span>
+                              <button 
+                                onClick={() => updateCartQty(item.cartItemId, 1)}
+                                className="px-2 py-0.5 text-neutral-400 hover:text-white"
+                              >
+                                +
+                              </button>
+                            </div>
+
+                            <button 
+                              onClick={() => removeFromCart(item.cartItemId)}
+                              className="text-[11px] text-red-400 hover:underline"
+                            >
+                              Удалить
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Cart Footer */}
+              {cart.length > 0 && (
+                <div className="border-t border-neutral-800 pt-4 space-y-4">
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex justify-between text-neutral-400">
+                      <span>Доставка по г. {activeCityObj.name}:</span>
+                      <span className="text-emerald-400 font-medium">Бесплатно</span>
+                    </div>
+                    <div className="flex justify-between text-neutral-400">
+                      <span>Фирменная подарочная упаковка:</span>
+                      <span className="text-emerald-400 font-medium">Включено</span>
+                    </div>
+                    <div className="flex justify-between text-base font-semibold text-white pt-2 border-t border-neutral-900">
+                      <span>Итого к оплате:</span>
+                      <span>{formattedPrice(cartTotal)}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsCartOpen(false);
+                      setIsCheckoutOpen(true);
+                    }}
+                    className="w-full py-4 bg-white text-neutral-950 font-bold text-xs uppercase tracking-[0.2em] hover:bg-amber-400 transition-colors"
+                  >
+                    Оформить Заказ
+                  </button>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* D. WISHLIST DRAWER */}
+      {isWishlistOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsWishlistOpen(false)} />
+          
+          <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-neutral-950 border-l border-neutral-800 text-neutral-100 p-6 flex flex-col justify-between shadow-2xl">
+              <div>
+                <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+                    <h2 className="text-lg font-serif text-white">Избранное ({wishlist.length})</h2>
+                  </div>
+                  <button onClick={() => setIsWishlistOpen(false)} className="text-neutral-400 hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {wishlist.length === 0 ? (
+                  <div className="text-center py-16 space-y-3">
+                    <Heart className="w-12 h-12 text-neutral-800 mx-auto" />
+                    <p className="text-neutral-400 text-sm">В избранном пока нет товаров</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-neutral-800 max-h-[70vh] overflow-y-auto my-4">
+                    {wishlist.map(prod => (
+                      <div key={prod.id} className="py-4 flex gap-4 items-center justify-between">
+                        <img src={prod.image} alt={prod.name} className="w-14 h-18 object-cover bg-neutral-900 rounded" />
+                        <div className="flex-1">
+                          <h4 className="text-xs text-white font-medium line-clamp-1">{prod.name}</h4>
+                          <span className="text-xs text-neutral-400 font-semibold">{formattedPrice(prod.price)}</span>
+                        </div>
+                        <button
+                          onClick={() => addToCart(prod, prod.sizes[0], prod.colors[0])}
+                          className="px-3 py-1.5 bg-white text-neutral-950 text-xs font-semibold rounded hover:bg-amber-400"
+                        >
+                          Купить
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* E. CHECKOUT MODAL */}
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-neutral-900 border border-neutral-800 w-full max-w-lg rounded-lg p-6 relative">
+            <button onClick={() => setIsCheckoutOpen(false)} className="absolute top-4 right-4 text-neutral-400 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+
+            {checkoutSuccess ? (
+              <div className="text-center py-8 space-y-4">
+                <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+                  <Check className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-serif text-white">Заказ успешно оформлен!</h3>
+                <p className="text-xs text-neutral-400 max-w-xs mx-auto">
+                  Спасибо за покупку в Federico Baccio. Персональный консультант из бутика в г. {activeCityObj.name} свяжется с вами в течение 15 минут для подтверждения времени курьерской доставки.
+                </p>
+                <button
+                  onClick={() => {
+                    setCart([]);
+                    setCheckoutSuccess(false);
+                    setIsCheckoutOpen(false);
+                  }}
+                  className="px-8 py-3 bg-white text-neutral-950 text-xs font-bold uppercase tracking-wider rounded"
+                >
+                  Отлично
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <h3 className="text-xl font-serif text-white border-b border-neutral-800 pb-3">
+                  Быстрое оформление заказа ({activeCityObj.name})
+                </h3>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] text-neutral-400 block mb-1">ФИО Получателя</label>
+                    <input type="text" placeholder="Касымов Бахтияр" className="w-full bg-neutral-950 border border-neutral-800 text-xs text-white p-3 rounded focus:outline-none focus:border-amber-400" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-neutral-400 block mb-1">Номер телефона (WhatsApp)</label>
+                    <input type="text" placeholder="+7 (777) 000-00-00" className="w-full bg-neutral-950 border border-neutral-800 text-xs text-white p-3 rounded focus:outline-none focus:border-amber-400" />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-neutral-400 block mb-1">Адрес доставки в г. {activeCityObj.name}</label>
+                    <input type="text" placeholder="ул. Абая 150, кв. 42" className="w-full bg-neutral-950 border border-neutral-800 text-xs text-white p-3 rounded focus:outline-none focus:border-amber-400" />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-neutral-950 border border-neutral-800 rounded text-xs space-y-1">
+                  <div className="flex justify-between text-neutral-400">
+                    <span>Сумма заказа:</span>
+                    <span className="text-white font-semibold">{formattedPrice(cartTotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-neutral-400">
+                    <span>Оплата при получении:</span>
+                    <span className="text-emerald-400">Kaspi Red / Карта / Наличные</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setCheckoutSuccess(true)}
+                  className="w-full py-4 bg-white text-neutral-950 font-bold text-xs uppercase tracking-[0.2em] hover:bg-amber-400 transition-colors"
+                >
+                  Подтвердить Заказ ({formattedPrice(cartTotal)})
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
